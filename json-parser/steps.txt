@@ -1,0 +1,8 @@
+# to do
+
+1. create a an arg parser with flag `-p` to handle json input
+2. print the json string passed unparsed
+3. tokenize the json into an array of each token and print to console
+4. validate the json input via lexical analysis passing back errors to the user
+5. convert the json input to something that is indexable ie. someObj['key'] 
+
