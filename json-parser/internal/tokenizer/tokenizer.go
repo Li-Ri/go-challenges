@@ -1,19 +1,19 @@
 package tokenizer
 
 import (
-	"fmt"
 	"strings"
+	"regexp"
 )
 
 
 type Token struct {
-  name TokenType
-  value string
+  Name TokenType
+  Value string
 }
 
 type TokenType string
 
-const (
+var (
   BraceClose TokenType = "BraceClose"
   BraceOpen TokenType = "BraceOpen"
   BracketOpen TokenType = "BracketOpen"
@@ -23,41 +23,57 @@ const (
   Number TokenType = "Number"
   True TokenType = "True"
   False TokenType = "False"
-  DoubleQuotes = "DoubleQuotes"
+  DoubleQuotes TokenType = "DoubleQuotes"
 )
 
 func Tokenize(jsonString string) []Token {
-  current := 0
   tokens := []Token{}
+	jsonLength := len(jsonString)
+	regexToMatchNumber := regexp.MustCompile(`\d+`)
 
-  for index, char := range jsonString {
-    switch char {
+	for index := 0; index < jsonLength; index++ {
+    switch jsonString[index] {
     case '{':
-      tokens = append(tokens, Token{ name: BraceOpen, value: string(char)  }) 
+      tokens = append(tokens, Token{ Name: BraceOpen, Value: string(jsonString[index])  }) 
     case '}':
-      tokens = append(tokens, Token{ name: BraceClose, value: string(char)  }) 
+      tokens = append(tokens, Token{ Name: BraceClose, Value: string(jsonString[index])  }) 
     case '[':
-      tokens = append(tokens, Token{ name: BracketOpen, value: string(char)  }) 
+      tokens = append(tokens, Token{ Name: BracketOpen, Value: string(jsonString[index])  }) 
     case ']':
-      tokens = append(tokens, Token{ name: BracketClose, value: string(char)  }) 
+      tokens = append(tokens, Token{ Name: BracketClose, Value: string(jsonString[index])  }) 
     case ',':
-      tokens = append(tokens, Token{ name: Comma, value: string(char)  }) 
+      tokens = append(tokens, Token{ Name: Comma, Value: string(jsonString[index])  }) 
     case ':':
-      tokens = append(tokens, Token{ name: Colon, value: string(char)  })
+      tokens = append(tokens, Token{ Name: Colon, Value: string(jsonString[index])  })
     case '"':
-      tokens = append(tokens, Token{ name: DoubleQuotes , value: parseString(jsonString,index)  })
+			stringValue := parseString(jsonString,index)
+      tokens = append(tokens, Token{ Name: DoubleQuotes , Value: stringValue  })
+		  index = index + len(stringValue) + 1
+		case 't':
+			if jsonString[index:index+4] == "true" {
+				tokens = append(tokens, Token{ Name: True, Value: "true" })
+				index = index + 3
+			}
+		case 'f':
+			if jsonString[index:index+5] == "false" {
+				tokens = append(tokens, Token{ Name: False, Value: "false" })
+				index = index + 4
+			}
     }
-    current++
-  }
-  fmt.Sprintf("tokens: ", tokens)
 
+		if(regexToMatchNumber.MatchString(string(jsonString[index]))) {
+			numberValue := parseNumber(jsonString,index)
+			tokens = append(tokens, Token{ Name: Number, Value: numberValue  })
+			index = index + len(numberValue) -1
+		}
+
+  }
   return tokens
 }
 
 func parseString(jsonString string, startingIndex int) string {
   currentIndex := startingIndex
-  slicedJson := jsonString[currentIndex:]
-  fmt.Println("slicedJson " + slicedJson)
+	slicedJson := jsonString[currentIndex+1:]
   stringValue := make([]string, 0)
 
   for _, char := range slicedJson {
@@ -66,6 +82,20 @@ func parseString(jsonString string, startingIndex int) string {
     }
     stringValue = append(stringValue,string(char))
   }
-  fmt.Println("stringValue", stringValue)
   return strings.Join(stringValue, "")
+}
+
+
+func parseNumber(jsonString string, startingIndex int) string {
+	currentIndex := startingIndex
+	slicedJson := jsonString[currentIndex:]
+	numberValue := make([]string, 0)
+
+	for _, char := range slicedJson {
+		if char == ',' || char == '}' || char == ']' {
+			break
+		}
+		numberValue = append(numberValue,string(char))
+	}
+	return strings.Join(numberValue, "")
 }

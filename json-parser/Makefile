@@ -14,4 +14,4 @@ empty-json:
 
 
 test:
-	go test ./...
+	go test ./... -v
