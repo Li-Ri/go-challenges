@@ -19,9 +19,7 @@ func TestJsonStringSuccessfullyTokenizedWithKeyString(t *testing.T) {
 		{ Name: tokenizer.BraceClose, Value: "}" },
 	}
 
-  if (stringifyTokenSlice(got) != stringifyTokenSlice(want)) {
-    t.Fatalf("got: %+q, want: %+q", got, want)
-  }
+	assertTokenSlicesAreEqual(t, got, want)
 }
 
 func TestJsonStringSuccessfullyTokenizedWithKeyNumber(t *testing.T) {
@@ -34,9 +32,7 @@ jsonString := `{"test":123}`
 		{ Name: tokenizer.Number, Value: "123" },
 		{ Name: tokenizer.BraceClose, Value: "}" },
 	}
-	if(stringifyTokenSlice(got) != stringifyTokenSlice(want)) {
-		t.Fatalf("got: %+q, want: %+q", got, want)
-	}
+	assertTokenSlicesAreEqual(t, got, want)
 }
 
 func TestJsonStringSuccessfullyTokenizedWithBooleanValue(t *testing.T) {
@@ -49,9 +45,7 @@ func TestJsonStringSuccessfullyTokenizedWithBooleanValue(t *testing.T) {
 		{ Name: tokenizer.True, Value: "true" },
 		{ Name: tokenizer.BraceClose, Value: "}" },
 	}
-	if(stringifyTokenSlice(got) != stringifyTokenSlice(want)) {
-		t.Fatalf("got: %+q, want: %+q", got, want)
-	}
+	assertTokenSlicesAreEqual(t, got, want)
 }
 
 
@@ -71,6 +65,73 @@ func TestJsonStringSuccessfullyTokenizedWithArray(t *testing.T) {
 		{ Name: tokenizer.BracketClose, Value: "]" },
 		{ Name: tokenizer.BraceClose, Value: "}" },
 	}
+	assertTokenSlicesAreEqual(t, got, want)
+}
+
+func TestJsonStringSuccessfullyTokenizedWithNestedObjectWithString(t *testing.T) {
+	jsonString := `{"test": {"nested": "value"}}`
+	got := tokenizer.Tokenize(jsonString)
+	want := []tokenizer.Token{
+		{ Name: tokenizer.BraceOpen, Value: "{" },
+		{ Name: tokenizer.DoubleQuotes, Value: "test" },
+		{ Name: tokenizer.Colon, Value: ":" },
+		{ Name: tokenizer.BraceOpen, Value: "{" },
+		{ Name: tokenizer.DoubleQuotes, Value: "nested" },
+		{ Name: tokenizer.Colon, Value: ":" },
+		{ Name: tokenizer.DoubleQuotes, Value: "value" },
+		{ Name: tokenizer.BraceClose, Value: "}" },
+		{ Name: tokenizer.BraceClose, Value: "}" },
+	}
+	assertTokenSlicesAreEqual(t, got, want)
+}
+
+func TestJsonStringSuccessfullyTokenizedWithNestedObjectWithNumber(t *testing.T) {
+	jsonString := `{"test": {"nested": 123}}`
+	got := tokenizer.Tokenize(jsonString)
+	want := []tokenizer.Token{
+		{ Name: tokenizer.BraceOpen, Value: "{" },
+		{ Name: tokenizer.DoubleQuotes, Value: "test" },
+		{ Name: tokenizer.Colon, Value: ":" },
+		{ Name: tokenizer.BraceOpen, Value: "{" },
+		{ Name: tokenizer.DoubleQuotes, Value: "nested" },
+		{ Name: tokenizer.Colon, Value: ":" },
+		{ Name: tokenizer.Number, Value: "123" },
+		{ Name: tokenizer.BraceClose, Value: "}" },
+		{ Name: tokenizer.BraceClose, Value: "}" },
+	}
+	assertTokenSlicesAreEqual(t, got, want)
+}
+
+func TestJsonStringSuccessfullyTokenizedWithNestedObjectWithArry(t *testing.T) {
+jsonString := `{"test": {"nested": [1,2,3]}}`
+	got := tokenizer.Tokenize(jsonString)
+	want := []tokenizer.Token{
+		{ Name: tokenizer.BraceOpen, Value: "{" },
+		{ Name: tokenizer.DoubleQuotes, Value: "test" },
+		{ Name: tokenizer.Colon, Value: ":" },
+		{ Name: tokenizer.BraceOpen, Value: "{" },
+		{ Name: tokenizer.DoubleQuotes, Value: "nested" },
+		{ Name: tokenizer.Colon, Value: ":" },
+		{ Name: tokenizer.BracketOpen, Value: "[" },
+		{ Name: tokenizer.Number, Value: "1" },
+		{ Name: tokenizer.Comma, Value: "," },
+		{ Name: tokenizer.Number, Value: "2" },
+		{ Name: tokenizer.Comma, Value: "," },
+		{ Name: tokenizer.Number, Value: "3" },
+		{ Name: tokenizer.BracketClose, Value: "]" },
+		{ Name: tokenizer.BraceClose, Value: "}" },
+		{ Name: tokenizer.BraceClose, Value: "}" },
+	}
+
+	assertTokenSlicesAreEqual(t, got, want)
+}
+
+
+func assertTokenSlicesAreEqual(t *testing.T, got []tokenizer.Token, want []tokenizer.Token) {
+	if len(got) != len(want) {
+		t.Fatalf("got: %+q, want: %+q", got, want)
+	}
+
 	if(stringifyTokenSlice(got) != stringifyTokenSlice(want)) {
 		t.Fatalf("got: %+q, want: %+q", got, want)
 	}
