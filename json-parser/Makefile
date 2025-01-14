@@ -15,3 +15,6 @@ empty-json:
 
 test:
 	go test ./... -v
+
+fmt:
+	go fmt ./...
